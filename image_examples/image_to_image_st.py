@@ -113,7 +113,11 @@ st.subheader("Image Generation Demo - Image to Image")
 model = st.selectbox("Select model", ["Amazon Nova"])
 
 # TODO insert your comments
+# Add file uploader for user image
+user_image = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
 
+# Add text input for change prompt
+change_prompt = st.text_input("Enter prompt for image modification")
 
 col1, col2 = st.columns(2)  # Column 1 for input image, Column 2 for output image
 

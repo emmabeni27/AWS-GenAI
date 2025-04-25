@@ -199,3 +199,27 @@ if user_image is not None:
         mask = gen_mask_from_image(user_image)
 
     # TODO Finish App with Q
+    mask = gen_mask_from_image(user_image)
+
+    # Mostrar la máscara
+    col2.image(mask, caption="Mask")
+
+    # Botón para generar la imagen
+    if st.button("Generate Inpainting"):
+        if change_prompt:
+            with st.spinner("Generating image..."):
+                try:
+                    # Generar la imagen usando el pipeline existente
+                    result_image = inpaint_image_pipeline(
+                        user_image,
+                        change_prompt,
+                        mask,
+                        model
+                    )
+                    
+                    # Mostrar la imagen resultante
+                    col3.image(result_image, caption="Generated Result")
+                except Exception as e:
+                    st.error(f"Error during image generation: {str(e)}")
+        else:
+            st.warning("Please enter a prompt before generating")

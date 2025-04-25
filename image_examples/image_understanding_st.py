@@ -19,7 +19,6 @@ bedrock_runtime = boto3.client(
 
 
 def call_claude_sonnet(base64_string):
-
     prompt_config = {
         "anthropic_version": "bedrock-2023-05-31",
         "max_tokens": 4096,
@@ -66,13 +65,28 @@ def pil_to_base64(image, format="png"):
 # Streamlit file uploader for only for images
 user_image = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
 
-# Creat two columns, one to show the uploaded image, another for the new image
+# Create two columns, one to show the uploaded image, another for the caption
 col1, col2 = st.columns(2)
 
 # Show the uploaded image
 if user_image is not None:
+    # Open and display the uploaded image
     user_image = Image.open(user_image)
-    # TODO Finish App with Q
-
+    col1.image(user_image, caption="Uploaded Image", use_column_width=True)
+    
+    # Convert image to base64
+    base64_image = pil_to_base64(user_image)
+    
+    # Add a button to generate caption
+    if col1.button("Generate Caption"):
+        with st.spinner("Generating caption..."):
+            try:
+                # Get caption from Claude
+                caption = call_claude_sonnet(base64_image)
+                # Display the caption
+                col2.write("### Generated Caption:")
+                col2.write(caption)
+            except Exception as e:
+                col2.error(f"Error generating caption: {str(e)}")
 else:
     col2.write("No image uploaded")
