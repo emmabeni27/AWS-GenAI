@@ -1,9 +1,11 @@
 import json
-
+import base64
+from io import BytesIO
+from PIL import Image
 import boto3
 import streamlit as st
 
-st.title("Building with Bedrock")  # Title of the application
+st.title("Building with Bedrock")
 st.subheader("Image Generation Demo")
 
 REGION = "us-east-1"
@@ -14,6 +16,25 @@ bedrock_runtime = boto3.client(
     region_name=REGION,
 )
 
+def base64_to_image(base64_string):
+    """
+    Convert a base64 string to a PIL Image.
+    Args:
+        base64_string (str): The base64 encoded image string
+    Returns:
+        Image: A PIL Image object
+    """
+    try:
+        # Decode the base64 string
+        image_bytes = base64.b64decode(base64_string)
+        # Create a BytesIO object for the image data
+        image_buffer = BytesIO(image_bytes)
+        # Open the image using PIL
+        image = Image.open(image_buffer)
+        return image
+    except Exception as e:
+        st.error(f"Error converting base64 to image: {str(e)}")
+        return None
 
 def generate_image_nova(text):
     """
@@ -53,5 +74,45 @@ def generate_image_nova(text):
 
     return base64_image
 
-
+# User Interface Elements
 model = st.selectbox("Select model", ["Amazon Nova Canvas"])
+
+# Text input for the prompt
+user_prompt = st.text_input("Enter your image prompt:", 
+                           placeholder="A serene landscape with mountains...")
+
+# Generate button
+if st.button("Generate Image"):
+    if user_prompt:
+        try:
+            # Show loading message
+            with st.spinner("Generating your image..."):
+                # Generate the image
+                base64_string = generate_image_nova(user_prompt)
+                
+                # Convert base64 to image
+                image = base64_to_image(base64_string)
+                
+                if image:
+                    # Display the image
+                    st.image(image, caption="Generated Image", use_column_width=True)
+                else:
+                    st.error("Failed to generate image")
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
+    else:
+        st.warning("Please enter a prompt first!")
+
+# Add some helpful instructions
+st.markdown("""
+### How to use:
+1. Enter a descriptive prompt in the text box
+2. Click 'Generate Image'
+3. Wait for your image to be generated
+4. The generated image will appear below
+
+**Tips for better prompts:**
+- Be specific and descriptive
+- Include details about style, lighting, and mood
+- Specify any particular artistic style you want
+""")
